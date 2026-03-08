@@ -23,7 +23,7 @@ class ProductFixer extends AbstractFixer
         return ['products'];
     }
 
-    public function preview(string $type): array
+    public function preview(string $type, array $options = []): array
     {
         return match ($type) {
             'products' => $this->previewProducts(),
@@ -31,7 +31,7 @@ class ProductFixer extends AbstractFixer
         };
     }
 
-    public function apply(string $type): array
+    public function apply(string $type, array $options = []): array
     {
         return match ($type) {
             'products' => $this->fixProducts(),

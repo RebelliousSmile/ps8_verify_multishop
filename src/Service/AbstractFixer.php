@@ -32,12 +32,12 @@ abstract class AbstractFixer
     /**
      * @return array<string, mixed>
      */
-    abstract public function preview(string $type): array;
+    abstract public function preview(string $type, array $options = []): array;
 
     /**
      * @return array<string, mixed>
      */
-    abstract public function apply(string $type): array;
+    abstract public function apply(string $type, array $options = []): array;
 
     /**
      * Build a parameterized exclusion clause for product IDs.

@@ -21,7 +21,7 @@ class ShopGroupFixer extends AbstractFixer
         return ['shop_group_sharing'];
     }
 
-    public function preview(string $type): array
+    public function preview(string $type, array $options = []): array
     {
         return match ($type) {
             'shop_group_sharing' => $this->previewShopGroupSharing(),
@@ -29,7 +29,7 @@ class ShopGroupFixer extends AbstractFixer
         };
     }
 
-    public function apply(string $type): array
+    public function apply(string $type, array $options = []): array
     {
         return match ($type) {
             'shop_group_sharing' => $this->fixShopGroupSharing(),

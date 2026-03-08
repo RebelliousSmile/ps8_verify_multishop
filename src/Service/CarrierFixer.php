@@ -23,7 +23,7 @@ class CarrierFixer extends AbstractFixer
         return ['carriers_payments'];
     }
 
-    public function preview(string $type): array
+    public function preview(string $type, array $options = []): array
     {
         return match ($type) {
             'carriers_payments' => $this->previewCarriersPayments(),
@@ -31,7 +31,7 @@ class CarrierFixer extends AbstractFixer
         };
     }
 
-    public function apply(string $type): array
+    public function apply(string $type, array $options = []): array
     {
         return match ($type) {
             'carriers_payments' => $this->fixCarriersPayments(),

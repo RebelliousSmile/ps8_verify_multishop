@@ -18,7 +18,7 @@ class StockFixer extends AbstractFixer
         return ['stocks', 'duplicate_stocks', 'null_quantities', 'share_stock'];
     }
 
-    public function preview(string $type): array
+    public function preview(string $type, array $options = []): array
     {
         return match ($type) {
             'stocks' => $this->previewStocks(),
@@ -29,7 +29,7 @@ class StockFixer extends AbstractFixer
         };
     }
 
-    public function apply(string $type): array
+    public function apply(string $type, array $options = []): array
     {
         return match ($type) {
             'stocks' => $this->fixStocks(),
@@ -167,30 +167,43 @@ class StockFixer extends AbstractFixer
             $step1Rows = 0;
             $step2Rows = 0;
 
-            if ($countShop1 > 0) {
-                if ($countGlobal > 0) {
-                    $step0Deleted = $this->connection->executeStatement("
-                        DELETE g FROM {$this->prefix}stock_available g
-                        INNER JOIN {$this->prefix}stock_available s
-                            ON g.id_product = s.id_product
-                            AND g.id_product_attribute = s.id_product_attribute
-                        WHERE g.id_shop = 0 AND s.id_shop = 1
-                    ");
+            $this->connection->beginTransaction();
+            try {
+                if ($countShop1 > 0) {
+                    if ($countGlobal > 0) {
+                        $step0Deleted = $this->connection->executeStatement("
+                            DELETE g FROM {$this->prefix}stock_available g
+                            INNER JOIN {$this->prefix}stock_available s
+                                ON g.id_product = s.id_product
+                                AND g.id_product_attribute = s.id_product_attribute
+                            WHERE g.id_shop = 0 AND s.id_shop = 1
+                        ");
 
-                    $this->connection->executeStatement("
-                        DELETE FROM {$this->prefix}stock_available WHERE id_shop = 0
+                        $this->connection->executeStatement("
+                            DELETE FROM {$this->prefix}stock_available WHERE id_shop = 0
+                        ");
+                    }
+
+                    $step1Rows = $this->connection->executeStatement("
+                        UPDATE {$this->prefix}stock_available SET id_shop = 0 WHERE id_shop = 1
                     ");
                 }
 
-                $step1Rows = $this->connection->executeStatement("
-                    UPDATE {$this->prefix}stock_available SET id_shop = 0 WHERE id_shop = 1
-                ");
-            }
+                if ($wrongShopGroup > 0) {
+                    $step2Rows = $this->connection->executeStatement("
+                        UPDATE {$this->prefix}stock_available SET id_shop_group = 1 WHERE id_shop_group = 0
+                    ");
+                }
 
-            if ($wrongShopGroup > 0) {
-                $step2Rows = $this->connection->executeStatement("
-                    UPDATE {$this->prefix}stock_available SET id_shop_group = 1 WHERE id_shop_group = 0
-                ");
+                $this->connection->commit();
+            } catch (\Exception $e) {
+                $this->connection->rollBack();
+
+                return [
+                    'success' => false,
+                    'type' => 'stocks',
+                    'error' => $e->getMessage(),
+                ];
             }
 
             $newCountGlobal = (int) $this->connection->fetchOne("

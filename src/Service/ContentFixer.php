@@ -21,7 +21,7 @@ class ContentFixer extends AbstractFixer
         return ['image_shop', 'cms', 'meta'];
     }
 
-    public function preview(string $type): array
+    public function preview(string $type, array $options = []): array
     {
         return match ($type) {
             'image_shop' => $this->previewImageShop(),
@@ -31,7 +31,7 @@ class ContentFixer extends AbstractFixer
         };
     }
 
-    public function apply(string $type): array
+    public function apply(string $type, array $options = []): array
     {
         return match ($type) {
             'image_shop' => $this->fixImageShop(),

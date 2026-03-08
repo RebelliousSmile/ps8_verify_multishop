@@ -46,11 +46,7 @@ class FixerDispatcher
             return ['error' => 'Unknown fix type', 'success' => false];
         }
 
-        if ($fixer instanceof ConfigFixer) {
-            return $fixer->preview($type, $options);
-        }
-
-        return $fixer->preview($type);
+        return $fixer->preview($type, $options);
     }
 
     /**
@@ -65,9 +61,7 @@ class FixerDispatcher
             return ['error' => 'Unknown fix type', 'success' => false];
         }
 
-        $result = $fixer instanceof ConfigFixer
-            ? $fixer->apply($type, $options)
-            : $fixer->apply($type);
+        $result = $fixer->apply($type, $options);
 
         if ($result['success'] ?? false) {
             $this->clearPrestaShopCache();

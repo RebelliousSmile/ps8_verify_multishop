@@ -1,0 +1,227 @@
+{% extends '@PrestaShop/Admin/layout.html.twig' %}
+
+{% block content %}
+{% include '@Modules/sc_verify_multishop/views/templates/admin/_partials/header_tabs.html.twig' with {current_tab: 'dashboard'} %}
+
+{# Summary Card with Refresh Button #}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-header-title">
+            <i class="material-icons">assessment</i>
+            {{ 'Multishop Status'|trans({}, 'Modules.Scverifymultishop.Admin') }}
+        </h3>
+        <div class="card-header-toolbar">
+            <small class="text-muted mr-3">
+                {{ 'Last analysis'|trans({}, 'Modules.Scverifymultishop.Admin') }}:
+                {% if diagnostic.timestamp is defined %}
+                    {{ diagnostic.timestamp|date('d/m/Y H:i:s') }}
+                {% else %}
+                    -
+                {% endif %}
+            </small>
+            <a href="{{ path('sc_verify_multishop_refresh') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="material-icons">refresh</i>
+                {{ 'Refresh'|trans({}, 'Modules.Scverifymultishop.Admin') }}
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row text-center">
+            <div class="col-md-3">
+                <h2 class="mb-0">{{ diagnostic.summary.total|default(0) }}</h2>
+                <small class="text-muted">{{ 'Total Checks'|trans({}, 'Modules.Scverifymultishop.Admin') }}</small>
+            </div>
+            <div class="col-md-3">
+                <h2 class="mb-0 text-success">{{ diagnostic.summary.ok|default(0) }}</h2>
+                <small class="text-muted">OK</small>
+            </div>
+            <div class="col-md-3">
+                <h2 class="mb-0 text-warning">{{ diagnostic.summary.warning|default(0) }}</h2>
+                <small class="text-muted">{{ 'Warnings'|trans({}, 'Modules.Scverifymultishop.Admin') }}</small>
+            </div>
+            <div class="col-md-3">
+                <h2 class="mb-0 text-danger">{{ diagnostic.summary.error|default(0) }}</h2>
+                <small class="text-muted">{{ 'Errors'|trans({}, 'Modules.Scverifymultishop.Admin') }}</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Diagnostic Cards #}
+<div class="row">
+{% for key, item in diagnostic.items|default({}) %}
+{% if key != 'shop_override' %}
+
+    {# For module_config: merge with shop_override into a single card #}
+    {# item.status already reflects the worst of both (computed in DiagnosticRegistry) #}
+    {% if key == 'module_config' %}
+        {% set soItem = diagnostic.items.shop_override ?? null %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 {% if item.status == 'error' %}border-danger{% elseif item.status == 'warning' %}border-warning{% endif %}">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="card-header-title">
+                    <i class="material-icons">settings_applications</i>
+                    {{ item.label }}
+                </h3>
+                <span class="badge badge-{{ item.status == 'ok' ? 'success' : (item.status == 'warning' ? 'warning' : 'danger') }}">
+                    {{ item.status|upper }}
+                </span>
+            </div>
+            <div class="card-body">
+                {# Sub-row: module_config (blocking NULLs) #}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small">NULLs bloquants</span>
+                    {% if item.issue_count > 0 %}
+                        <span class="badge badge-{{ item.status == 'error' ? 'danger' : 'warning' }}">{{ item.issue_count }}</span>
+                    {% else %}
+                        <span class="badge badge-success">OK</span>
+                    {% endif %}
+                </div>
+                {# Sub-row: shop_override #}
+                {% if soItem %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small">Shop overrides</span>
+                    {% if soItem.issue_count > 0 %}
+                        <span class="badge badge-{{ soItem.status == 'error' ? 'danger' : 'warning' }}">{{ soItem.issue_count }}</span>
+                    {% else %}
+                        <span class="badge badge-success">OK</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-footer">
+                {# module_config buttons #}
+                <div class="mb-1">
+                    <small class="text-muted me-1">NULLs:</small>
+                    <a href="{{ path('sc_verify_multishop_diagnostic', {type: 'module_config'}) }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="material-icons">search</i>
+                    </a>
+                    {% if item.needs_fix %}
+                        <a href="{{ path('sc_verify_multishop_fix_preview', {type: 'module_config'}) }}" class="btn btn-sm btn-primary">
+                            <i class="material-icons">build</i>
+                        </a>
+                    {% else %}
+                        <button class="btn btn-sm btn-outline-success" disabled><i class="material-icons">check</i></button>
+                    {% endif %}
+                </div>
+                {# shop_override buttons #}
+                {% if soItem %}
+                <div class="mb-1">
+                    <small class="text-muted me-1">Overrides:</small>
+                    <a href="{{ path('sc_verify_multishop_diagnostic', {type: 'shop_override'}) }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="material-icons">search</i>
+                    </a>
+                    {% if soItem.needs_fix %}
+                        <a href="{{ path('sc_verify_multishop_fix_preview', {type: 'shop_override'}) }}" class="btn btn-sm btn-primary">
+                            <i class="material-icons">build</i>
+                        </a>
+                    {% else %}
+                        <button class="btn btn-sm btn-outline-success" disabled><i class="material-icons">check</i></button>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+
+    {# Standard card for all other items #}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 {% if item.status == 'error' %}border-danger{% elseif item.status == 'warning' %}border-warning{% endif %}">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="card-header-title">
+                    {% if key == 'shop_group' %}
+                        <i class="material-icons">share</i>
+                    {% elseif key == 'shops' %}
+                        <i class="material-icons">store</i>
+                    {% elseif key == 'payments' %}
+                        <i class="material-icons">payment</i>
+                    {% elseif key == 'carriers' %}
+                        <i class="material-icons">local_shipping</i>
+                    {% elseif key == 'products' %}
+                        <i class="material-icons">inventory_2</i>
+                    {% elseif key == 'stocks' %}
+                        <i class="material-icons">inventory</i>
+                    {% else %}
+                        <i class="material-icons">check_circle</i>
+                    {% endif %}
+                    {{ item.label }}
+                </h3>
+                <span class="badge badge-{{ item.status == 'ok' ? 'success' : (item.status == 'warning' ? 'warning' : 'danger') }}">
+                    {{ item.status|upper }}
+                </span>
+            </div>
+            <div class="card-body">
+                <p class="mb-2">{{ item.message }}</p>
+                {% if item.issue_count > 0 %}
+                <p class="mb-0">
+                    <span class="badge badge-{{ item.status == 'error' ? 'danger' : 'warning' }}">
+                        {{ item.issue_count }} {{ 'issue(s)'|trans({}, 'Modules.Scverifymultishop.Admin') }}
+                    </span>
+                </p>
+                {% endif %}
+            </div>
+            <div class="card-footer">
+                {% if key != 'shops' %}
+                <a href="{{ path('sc_verify_multishop_diagnostic', {type: key}) }}"
+                   class="btn btn-sm btn-outline-secondary">
+                    <i class="material-icons">search</i>
+                    {{ 'Diagnose'|trans({}, 'Modules.Scverifymultishop.Admin') }}
+                </a>
+                {% endif %}
+
+                {% if item.fix_type %}
+                    {% if item.needs_fix %}
+                        <a href="{{ path('sc_verify_multishop_fix_preview', {type: item.fix_type}) }}"
+                           class="btn btn-sm btn-primary">
+                            <i class="material-icons">build</i>
+                            {{ 'Repair'|trans({}, 'Modules.Scverifymultishop.Admin') }}
+                        </a>
+                    {% else %}
+                        <button class="btn btn-sm btn-outline-success" disabled>
+                            <i class="material-icons">check</i>
+                            OK
+                        </button>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% endif %}
+
+{% endif %}
+{% endfor %}
+</div>
+
+{# Quick Actions Card #}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-header-title">
+            <i class="material-icons">flash_on</i>
+            {{ 'Quick Actions'|trans({}, 'Modules.Scverifymultishop.Admin') }}
+        </h3>
+    </div>
+    <div class="card-body">
+        <div class="btn-group flex-wrap" role="group">
+            <a href="{{ path('sc_verify_multishop_diagnostic', {type: 'urls'}) }}" class="btn btn-outline-secondary">
+                <i class="material-icons">link</i>
+                {{ 'Check URLs'|trans({}, 'Modules.Scverifymultishop.Admin') }}
+            </a>
+            <a href="{{ path('sc_verify_multishop_diagnostic', {type: 'images'}) }}" class="btn btn-outline-secondary">
+                <i class="material-icons">image</i>
+                {{ 'Check Images'|trans({}, 'Modules.Scverifymultishop.Admin') }}
+            </a>
+            <a href="{{ path('sc_verify_multishop_diagnostic', {type: 'cms'}) }}" class="btn btn-outline-secondary">
+                <i class="material-icons">article</i>
+                {{ 'Check CMS'|trans({}, 'Modules.Scverifymultishop.Admin') }}
+            </a>
+            <a href="{{ path('sc_verify_multishop_diagnostic', {type: 'meta'}) }}" class="btn btn-outline-secondary">
+                <i class="material-icons">code</i>
+                {{ 'Check Meta'|trans({}, 'Modules.Scverifymultishop.Admin') }}
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

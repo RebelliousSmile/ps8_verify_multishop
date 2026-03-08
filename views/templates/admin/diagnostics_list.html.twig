@@ -1,0 +1,58 @@
+{% extends '@PrestaShop/Admin/layout.html.twig' %}
+
+{% block content %}
+{% include '@Modules/sc_verify_multishop/views/templates/admin/_partials/header_tabs.html.twig' with {current_tab: 'dashboard', current_title: 'Diagnostics'} %}
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-header-title">
+            <i class="material-icons">search</i>
+            {{ 'Available Diagnostics'|trans({}, 'Modules.Scverifymultishop.Admin') }}
+        </h3>
+    </div>
+    <div class="card-body">
+        {% set categories = {
+            'configuration': {'label': 'Configuration', 'icon': 'settings'},
+            'modules': {'label': 'Modules', 'icon': 'extension'},
+            'shipping': {'label': 'Livraison', 'icon': 'local_shipping'},
+            'catalog': {'label': 'Catalogue', 'icon': 'inventory_2'},
+            'content': {'label': 'Contenu', 'icon': 'article'},
+            'seo': {'label': 'SEO', 'icon': 'code'}
+        } %}
+
+        {% for catKey, catInfo in categories %}
+            {% set catDiags = diagnostics|filter(d => d.category == catKey) %}
+            {% if catDiags|length > 0 %}
+            <h5 class="mt-4 mb-3">
+                <i class="material-icons">{{ catInfo.icon }}</i>
+                {{ catInfo.label }}
+            </h5>
+            <div class="row">
+                {% for diag in catDiags %}
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="card-header-title mb-0">
+                                <i class="material-icons">{{ diag.icon }}</i>
+                                {{ diag.title }}
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-0">{{ diag.description }}</p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ path('sc_verify_multishop_diagnostic', {type: diag.type}) }}"
+                               class="btn btn-sm btn-outline-secondary">
+                                <i class="material-icons">play_arrow</i>
+                                {{ 'Run'|trans({}, 'Modules.Scverifymultishop.Admin') }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

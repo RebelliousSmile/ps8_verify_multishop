@@ -1,0 +1,68 @@
+{% extends '@PrestaShop/Admin/layout.html.twig' %}
+
+{% block content %}
+{% include '@Modules/sc_verify_multishop/views/templates/admin/_partials/header_tabs.html.twig' with {current_tab: 'dashboard', current_title: 'Corrections'} %}
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-header-title">
+            <i class="material-icons">build</i>
+            {{ 'Available Fixes'|trans({}, 'Modules.Scverifymultishop.Admin') }}
+        </h3>
+    </div>
+    <div class="card-body">
+        {% set categories = {
+            'prerequisite': {'label': 'Pre-requis', 'icon': 'priority_high'},
+            'config': {'label': 'Configuration', 'icon': 'settings'},
+            'shipping': {'label': 'Livraison', 'icon': 'local_shipping'},
+            'catalog': {'label': 'Catalogue', 'icon': 'inventory_2'},
+            'content': {'label': 'Contenu', 'icon': 'article'},
+            'seo': {'label': 'SEO', 'icon': 'code'}
+        } %}
+
+        {% set severityColors = {
+            'critical': 'danger',
+            'high': 'warning',
+            'medium': 'info',
+            'low': 'secondary'
+        } %}
+
+        {% for catKey, catInfo in categories %}
+            {% set catFixes = fixes|filter(f => f.category == catKey) %}
+            {% if catFixes|length > 0 %}
+            <h5 class="mt-4 mb-3">
+                <i class="material-icons">{{ catInfo.icon }}</i>
+                {{ catInfo.label }}
+            </h5>
+            <div class="row">
+                {% for fix in catFixes %}
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="card-header-title mb-0">
+                                <i class="material-icons">{{ fix.icon }}</i>
+                                {{ fix.title }}
+                            </h5>
+                            <span class="badge badge-{{ severityColors[fix.severity]|default('secondary') }}">
+                                {{ fix.severity|upper }}
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-0">{{ fix.description }}</p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ path('sc_verify_multishop_fix_preview', {type: fix.type}) }}"
+                               class="btn btn-sm btn-primary">
+                                <i class="material-icons">visibility</i>
+                                {{ 'Preview'|trans({}, 'Modules.Scverifymultishop.Admin') }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

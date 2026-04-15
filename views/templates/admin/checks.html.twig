@@ -1,0 +1,102 @@
+{% extends '@PrestaShop/Admin/layout.html.twig' %}
+
+{% block content %}
+<div class="sc-verify-checks">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      {% if last_run_at %}
+        <small class="text-muted">Dernière analyse : {{ last_run_at|date('d/m/Y H:i') }} — résultats en cache</small>
+      {% endif %}
+    </div>
+    <a href="{{ path('sc_verify_multishop_index', {refresh: 1}) }}" class="btn btn-primary">
+      <i class="material-icons">refresh</i> Rafraîchir
+    </a>
+  </div>
+
+  {% set domain_labels = {
+    'payment': 'Modules de paiement',
+    'shipping': 'Modules de livraison',
+    'products': 'Produits',
+    'images': 'Images'
+  } %}
+
+  {% for domain, results in results_by_domain %}
+    {% if results|length > 0 %}
+    <section class="sc-verify-domain mb-5">
+      <h2 class="h4 border-bottom pb-2 mb-3">
+        {{ domain_labels[domain] ?? domain }}
+      </h2>
+      <div class="list-group">
+        {% for result in results %}
+          <div class="list-group-item sc-check-row {% if result.status == 'ok' %}list-group-item-success{% elseif result.status == 'warning' %}list-group-item-warning{% else %}list-group-item-danger{% endif %}">
+            <div class="d-flex align-items-center">
+              <span class="me-2">
+                {% if result.status == 'ok' %}✅{% elseif result.status == 'warning' %}⚠️{% else %}❌{% endif %}
+              </span>
+              <strong>{{ result.label }}</strong>
+              <span class="ms-auto text-muted small">{{ result.message }}</span>
+            </div>
+            {% if result.status != 'ok' and result.issues|length > 0 %}
+              <details class="mt-2">
+                <summary class="text-muted small" style="cursor:pointer">
+                  Voir le détail ({{ result.issues|length }} problème{{ result.issues|length > 1 ? 's' : '' }})
+                </summary>
+                <div class="mt-2">
+                  {% if result.check_query %}
+                  <details class="mb-3">
+                    <summary class="text-muted small" style="cursor:pointer">
+                      <i>Requête de diagnostic</i>
+                    </summary>
+                    <pre class="small bg-secondary text-light p-2 rounded mb-1" style="white-space:pre-wrap;word-break:break-all">{{ result.check_query }}</pre>
+                    <button type="button" class="btn btn-sm btn-outline-secondary mb-2"
+                      onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent)">Copier la requête</button>
+                  </details>
+                  {% endif %}
+                  {# Liste des messages de détail #}
+                  <ul class="small mb-3 ps-3">
+                    {% for issue in result.issues %}
+                      <li>{{ issue.detail }}</li>
+                    {% endfor %}
+                  </ul>
+
+                  {# Regrouper tous les fix_query en un seul bloc #}
+                  {% set all_queries = [] %}
+                  {% set all_queries_2 = [] %}
+                  {% set has_bo_only = false %}
+                  {% for issue in result.issues %}
+                    {% if issue.fix_query is defined and issue.fix_query %}
+                      {% set all_queries = all_queries|merge([issue.fix_query]) %}
+                    {% else %}
+                      {% set has_bo_only = true %}
+                    {% endif %}
+                    {% if issue.fix_query_2 is defined and issue.fix_query_2 %}
+                      {% set all_queries_2 = all_queries_2|merge([issue.fix_query_2]) %}
+                    {% endif %}
+                  {% endfor %}
+
+                  {% if all_queries|length > 0 %}
+                    <pre class="small bg-dark text-light p-2 rounded mb-1" style="white-space:pre-wrap;word-break:break-all">{{ all_queries|join('\n') }}</pre>
+                    <button type="button" class="btn btn-sm btn-outline-secondary mb-3"
+                      onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent)">Copier tout</button>
+                  {% endif %}
+
+                  {% if all_queries_2|length > 0 %}
+                    <pre class="small bg-dark text-light p-2 rounded mb-1" style="white-space:pre-wrap;word-break:break-all">{{ all_queries_2|join('\n') }}</pre>
+                    <button type="button" class="btn btn-sm btn-outline-secondary mb-3"
+                      onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent)">Copier tout (étape 2)</button>
+                  {% endif %}
+
+                  {% if all_queries|length == 0 %}
+                    <div class="text-muted small">→ Configurer via le back-office</div>
+                  {% endif %}
+                </div>
+              </details>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+  {% endfor %}
+</div>
+{% endblock %}

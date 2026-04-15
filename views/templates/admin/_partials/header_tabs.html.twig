@@ -5,15 +5,12 @@
             <h3 class="card-header-title">
                 <i class="material-icons">verified</i>
                 Vérification Multishop
-                {% if current_title is defined and current_tab != 'dashboard' %}
-                    <small class="text-muted"> / {{ current_title }}</small>
-                {% endif %}
             </h3>
         </div>
 
         <ul class="nav nav-pills">
             <li class="nav-item">
-                <a href="{{ path('sc_verify_multishop_dashboard') }}" class="nav-link {{ current_tab|default('dashboard') == 'dashboard' ? 'active' : '' }}">
+                <a href="{{ path('sc_verify_multishop_index') }}" class="nav-link active">
                     <i class="material-icons">dashboard</i>
                     {{ 'Dashboard'|trans({}, 'Modules.Scverifymultishop.Admin') }}
                 </a>

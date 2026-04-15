@@ -18,12 +18,8 @@ if (file_exists($autoloadPath)) {
     require_once $autoloadPath;
 }
 
-use ScVerifyMultishop\Traits\HaveScriptamiTab;
-
 class sc_verify_multishop extends Module
 {
-    use HaveScriptamiTab;
-
     public const VERSION = '1.0.0';
 
     public function __construct()
@@ -53,8 +49,7 @@ class sc_verify_multishop extends Module
      */
     public function install(): bool
     {
-        return parent::install()
-            && $this->installScriptamiTab();
+        return parent::install();
     }
 
     /**
@@ -62,8 +57,17 @@ class sc_verify_multishop extends Module
      */
     public function uninstall(): bool
     {
-        return $this->uninstallScriptamiTab()
-            && parent::uninstall();
+        return parent::uninstall();
+    }
+
+    /**
+     * Redirect to the Symfony admin controller
+     */
+    public function getContent(): void
+    {
+        Tools::redirectAdmin(
+            $this->context->link->getAdminLink('AdminScVerifyMultishop')
+        );
     }
 
     /**

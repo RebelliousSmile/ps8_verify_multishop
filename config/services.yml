@@ -4,93 +4,138 @@ services:
     autowire: true
     autoconfigure: true
 
-  # Services
-  sc_verify_multishop.service.analyzer:
-    class: ScVerifyMultishop\Service\AnalyzerService
+  # Checks - Payment
+  sc_verify_multishop.check.payment_module_shop:
+    class: ScVerifyMultishop\Service\Check\Payment\PaymentModuleShopCheck
     arguments:
       - '@doctrine.dbal.default_connection'
       - '%database_prefix%'
 
-  sc_verify_multishop.service.fixer.config:
-    class: ScVerifyMultishop\Service\ConfigFixer
+  sc_verify_multishop.check.shipping_module_shop:
+    class: ScVerifyMultishop\Service\Check\Payment\ShippingModuleShopCheck
     arguments:
       - '@doctrine.dbal.default_connection'
       - '%database_prefix%'
 
-  sc_verify_multishop.service.diagnostics:
-    class: ScVerifyMultishop\Service\DiagnosticsService
-    arguments:
-      - '@doctrine.dbal.default_connection'
-      - '%database_prefix%'
-      - '%kernel.project_dir%'
-      - '@sc_verify_multishop.service.fixer.config'
-
-  sc_verify_multishop.service.fixer.shop_group:
-    class: ScVerifyMultishop\Service\ShopGroupFixer
+  sc_verify_multishop.check.paypal_credential:
+    class: ScVerifyMultishop\Service\Check\Payment\PaypalCredentialCheck
     arguments:
       - '@doctrine.dbal.default_connection'
       - '%database_prefix%'
 
-  sc_verify_multishop.service.fixer.carrier:
-    class: ScVerifyMultishop\Service\CarrierFixer
+  sc_verify_multishop.check.stripe_credential:
+    class: ScVerifyMultishop\Service\Check\Payment\StripeCredentialCheck
     arguments:
       - '@doctrine.dbal.default_connection'
       - '%database_prefix%'
 
-  sc_verify_multishop.service.fixer.product:
-    class: ScVerifyMultishop\Service\ProductFixer
+  sc_verify_multishop.check.colissimo_credential:
+    class: ScVerifyMultishop\Service\Check\Payment\ColissimoCredentialCheck
     arguments:
       - '@doctrine.dbal.default_connection'
       - '%database_prefix%'
 
-  sc_verify_multishop.service.fixer.stock:
-    class: ScVerifyMultishop\Service\StockFixer
+  sc_verify_multishop.check.mondial_relay_credential:
+    class: ScVerifyMultishop\Service\Check\Payment\MondialRelayCredentialCheck
     arguments:
       - '@doctrine.dbal.default_connection'
       - '%database_prefix%'
 
-  sc_verify_multishop.service.fixer.content:
-    class: ScVerifyMultishop\Service\ContentFixer
+  # Checks - Products & Images
+  sc_verify_multishop.check.product_lang:
+    class: ScVerifyMultishop\Service\Check\Product\ProductLangCheck
     arguments:
       - '@doctrine.dbal.default_connection'
       - '%database_prefix%'
 
-  sc_verify_multishop.service.fixer_dispatcher:
-    class: ScVerifyMultishop\Service\FixerDispatcher
+  sc_verify_multishop.check.product_shop:
+    class: ScVerifyMultishop\Service\Check\Product\ProductShopCheck
     arguments:
-      - '@sc_verify_multishop.service.fixer.shop_group'
-      - '@sc_verify_multishop.service.fixer.carrier'
-      - '@sc_verify_multishop.service.fixer.product'
-      - '@sc_verify_multishop.service.fixer.stock'
-      - '@sc_verify_multishop.service.fixer.content'
-      - '@sc_verify_multishop.service.fixer.config'
+      - '@doctrine.dbal.default_connection'
+      - '%database_prefix%'
 
-  sc_verify_multishop.service.diagnostic_registry:
-    class: ScVerifyMultishop\Service\DiagnosticRegistry
+  sc_verify_multishop.check.product_attribute_shop:
+    class: ScVerifyMultishop\Service\Check\Product\ProductAttributeShopCheck
     arguments:
-      - '@sc_verify_multishop.service.analyzer'
-      - '@sc_verify_multishop.service.diagnostics'
+      - '@doctrine.dbal.default_connection'
+      - '%database_prefix%'
+
+  sc_verify_multishop.check.default_attribute_shop:
+    class: ScVerifyMultishop\Service\Check\Product\DefaultAttributeShopCheck
+    arguments:
+      - '@doctrine.dbal.default_connection'
+      - '%database_prefix%'
+
+  sc_verify_multishop.check.attribute_shop:
+    class: ScVerifyMultishop\Service\Check\Product\AttributeShopCheck
+    arguments:
+      - '@doctrine.dbal.default_connection'
+      - '%database_prefix%'
+
+  sc_verify_multishop.check.category_lang:
+    class: ScVerifyMultishop\Service\Check\Product\CategoryLangCheck
+    arguments:
+      - '@doctrine.dbal.default_connection'
+      - '%database_prefix%'
+
+  sc_verify_multishop.check.category_shop:
+    class: ScVerifyMultishop\Service\Check\Product\CategoryShopCheck
+    arguments:
+      - '@doctrine.dbal.default_connection'
+      - '%database_prefix%'
+
+  sc_verify_multishop.check.specific_price_scope:
+    class: ScVerifyMultishop\Service\Check\Product\SpecificPriceScopeCheck
+    arguments:
+      - '@doctrine.dbal.default_connection'
+      - '%database_prefix%'
+
+  sc_verify_multishop.check.feature_shop:
+    class: ScVerifyMultishop\Service\Check\Product\FeatureShopCheck
+    arguments:
+      - '@doctrine.dbal.default_connection'
+      - '%database_prefix%'
+
+  sc_verify_multishop.check.price_anomaly:
+    class: ScVerifyMultishop\Service\Check\Product\PriceAnomalyCheck
+    arguments:
+      - '@doctrine.dbal.default_connection'
+      - '%database_prefix%'
+
+  sc_verify_multishop.check.image_shop:
+    class: ScVerifyMultishop\Service\Check\Product\ImageShopCheck
+    arguments:
+      - '@doctrine.dbal.default_connection'
+      - '%database_prefix%'
+
+  sc_verify_multishop.service.check_registry:
+    class: ScVerifyMultishop\Service\Check\CheckRegistry
+    arguments:
+      -
+        - '@sc_verify_multishop.check.payment_module_shop'
+        - '@sc_verify_multishop.check.shipping_module_shop'
+        - '@sc_verify_multishop.check.paypal_credential'
+        - '@sc_verify_multishop.check.stripe_credential'
+        - '@sc_verify_multishop.check.colissimo_credential'
+        - '@sc_verify_multishop.check.mondial_relay_credential'
+        - '@sc_verify_multishop.check.product_lang'
+        - '@sc_verify_multishop.check.product_shop'
+        - '@sc_verify_multishop.check.product_attribute_shop'
+        - '@sc_verify_multishop.check.default_attribute_shop'
+        - '@sc_verify_multishop.check.attribute_shop'
+        - '@sc_verify_multishop.check.category_lang'
+        - '@sc_verify_multishop.check.category_shop'
+        - '@sc_verify_multishop.check.specific_price_scope'
+        - '@sc_verify_multishop.check.feature_shop'
+        - '@sc_verify_multishop.check.price_anomaly'
+        - '@sc_verify_multishop.check.image_shop'
 
   # Controllers
-  sc_verify_multishop.controller.dashboard:
-    class: ScVerifyMultishop\Controller\Admin\DashboardController
-    arguments:
-      - '@sc_verify_multishop.service.diagnostic_registry'
-    calls:
-      - [setContainer, ['@service_container']]
-
   sc_verify_multishop.controller.diagnostic:
     class: ScVerifyMultishop\Controller\Admin\DiagnosticController
     arguments:
-      - '@sc_verify_multishop.service.analyzer'
-      - '@sc_verify_multishop.service.diagnostics'
+      - '@sc_verify_multishop.service.check_registry'
     calls:
       - [setContainer, ['@service_container']]
-
-  sc_verify_multishop.controller.fix:
-    class: ScVerifyMultishop\Controller\Admin\FixController
-    arguments:
-      - '@sc_verify_multishop.service.fixer_dispatcher'
-      - '@security.csrf.token_manager'
-    calls:
-      - [setContainer, ['@service_container']]
+    tags:
+      - { name: 'controller.service_arguments' }

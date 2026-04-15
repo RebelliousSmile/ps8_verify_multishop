@@ -1,55 +1,7 @@
-sc_verify_multishop_dashboard:
+sc_verify_multishop_index:
   path: /verify-multishop
   methods: [GET]
   defaults:
-    _controller: sc_verify_multishop.controller.dashboard::indexAction
+    _controller: 'sc_verify_multishop.controller.diagnostic::indexAction'
     _legacy_controller: AdminScVerifyMultishop
     _legacy_link: AdminScVerifyMultishop
-
-sc_verify_multishop_refresh:
-  path: /verify-multishop/refresh
-  methods: [GET]
-  defaults:
-    _controller: sc_verify_multishop.controller.dashboard::refreshAction
-    _legacy_controller: AdminScVerifyMultishop
-
-sc_verify_multishop_diagnostics_list:
-  path: /verify-multishop/diagnostics
-  methods: [GET]
-  defaults:
-    _controller: sc_verify_multishop.controller.diagnostic::listAction
-    _legacy_controller: AdminScVerifyMultishop
-
-sc_verify_multishop_fixes_list:
-  path: /verify-multishop/fixes
-  methods: [GET]
-  defaults:
-    _controller: sc_verify_multishop.controller.fix::listAction
-    _legacy_controller: AdminScVerifyMultishop
-
-sc_verify_multishop_diagnostic:
-  path: /verify-multishop/diagnostic/{type}
-  methods: [GET]
-  defaults:
-    _controller: sc_verify_multishop.controller.diagnostic::runAction
-    _legacy_controller: AdminScVerifyMultishop
-  requirements:
-    type: shop_group|shops|payments|carriers|stocks|products|urls|prices|images|currencies|cms|meta|image_shop|duplicate_stocks|null_quantities|module_config|shop_override
-
-sc_verify_multishop_fix_preview:
-  path: /verify-multishop/fix/{type}/preview
-  methods: [GET]
-  defaults:
-    _controller: sc_verify_multishop.controller.fix::previewAction
-    _legacy_controller: AdminScVerifyMultishop
-  requirements:
-    type: shop_group_sharing|carriers_payments|products|stocks|duplicate_stocks|null_quantities|image_shop|share_stock|cms|meta|module_config|shop_override
-
-sc_verify_multishop_fix_apply:
-  path: /verify-multishop/fix/{type}
-  methods: [POST]
-  defaults:
-    _controller: sc_verify_multishop.controller.fix::applyAction
-    _legacy_controller: AdminScVerifyMultishop
-  requirements:
-    type: shop_group_sharing|carriers_payments|products|stocks|duplicate_stocks|null_quantities|image_shop|share_stock|cms|meta|module_config|shop_override
